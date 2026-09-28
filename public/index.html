@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#06070b">
+  <meta name="description" content="MERCURY is a live multiplayer game. Pull one bowl of silver. No accounts.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="MERCURY">
+  <title>MERCURY</title>
+  <link rel="icon" href="/mercury.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesk:opsz,wght@12..96,500;12..96,700;12..96,800&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/mercury.css">
+</head>
+<body>
+  <canvas id="bowl"></canvas>
+  <header id="hud" hidden></header>
+  <div id="count" hidden></div>
+  <div id="panel"></div>
+  <p id="net" hidden>Reconnecting…</p>
+  <div id="toast" role="status"></div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/mercury.js"></script>
+</body>
+</html>

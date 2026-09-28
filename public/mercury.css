@@ -1,0 +1,318 @@
+:root {
+  --ink: #06070b;
+  --silver: #e7eef6;
+  --dim: #aeb8c6;
+  --line: rgba(231, 238, 246, 0.18);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--silver);
+  font-family: Outfit, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input { font: inherit; color: inherit; }
+
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:disabled { opacity: 0.42; cursor: not-allowed; }
+
+:focus-visible {
+  outline: 2px solid #c4b5ff;
+  outline-offset: 3px;
+}
+
+#bowl {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+#hud, #panel, #count, #net, #toast { z-index: 2; }
+
+#hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: calc(14px + env(safe-area-inset-top)) 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.hud-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand, h1 {
+  margin: 0;
+  font-family: "Bricolage Grotesk", Outfit, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+}
+
+.brand { font-size: 1.25rem; }
+
+h1 {
+  font-size: clamp(2.5rem, 9vw, 3.6rem);
+  background: linear-gradient(180deg, #ffffff 10%, #d5dee8 55%, #8b9aab 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.clock {
+  font-family: "Bricolage Grotesk", Outfit, sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.clock.urgent { color: #ffb15a; }
+
+.hint {
+  margin: 0;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.bar {
+  display: flex;
+  height: 10px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: rgba(231, 238, 246, 0.08);
+}
+
+.bar span { display: block; height: 100%; }
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.chips b { font-weight: 560; font-size: 0.92rem; }
+
+.leave {
+  pointer-events: auto;
+  border: 1px solid var(--line);
+  background: rgba(6, 7, 11, 0.55);
+  border-radius: 999px;
+  padding: 8px 12px;
+  min-height: 40px;
+}
+
+#count[hidden], #hud[hidden], #panel[hidden], #net[hidden] { display: none; }
+
+#count {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  font-family: "Bricolage Grotesk", Outfit, sans-serif;
+  font-weight: 800;
+  font-size: min(28vw, 11rem);
+  letter-spacing: -0.08em;
+  color: var(--silver);
+}
+
+#panel {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(460px, calc(100% - 24px));
+  max-height: min(78vh, 520px);
+  overflow: auto;
+  scrollbar-width: thin;
+  padding: 14px 16px 12px;
+  border-radius: 28px;
+  background: rgba(6, 7, 11, 0.72);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(16px);
+}
+
+#panel::-webkit-scrollbar { width: 8px; }
+
+.lede, .wait, .share {
+  color: var(--dim);
+  line-height: 1.4;
+}
+
+.lede { margin: 6px 0 0; }
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: #c4b5ff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+label {
+  display: block;
+  margin: 10px 0 6px;
+  color: #c4b5ff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 10px 14px;
+}
+
+input:focus { outline: none; border-color: #c4b5ff; }
+::placeholder { color: rgba(231, 238, 246, 0.35); }
+
+.actions, .join-row { display: flex; gap: 8px; }
+.actions { flex-direction: column; margin-top: 12px; }
+
+.join-row input {
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-family: "Bricolage Grotesk", Outfit, sans-serif;
+  font-size: 1.15rem;
+  border-radius: 999px;
+}
+
+button.primary, button.ghost, button.ticket {
+  border-radius: 999px;
+  min-height: 46px;
+  padding: 10px 16px;
+  font-weight: 600;
+}
+
+button.primary {
+  border: none;
+  background: var(--silver);
+  color: #12141a;
+  width: 100%;
+}
+
+button.ghost {
+  border: 1px solid var(--line);
+  background: transparent;
+  width: 100%;
+}
+
+.join-row button.ghost { width: auto; }
+
+.steps { margin: 10px 0 0; padding-left: 1.1rem; }
+.steps li { margin: 0.35rem 0; }
+
+.ticket {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--silver);
+  font-family: "Bricolage Grotesk", Outfit, sans-serif;
+  font-weight: 800;
+  font-size: clamp(2rem, 8vw, 2.8rem);
+  letter-spacing: 0.18em;
+  line-height: 1;
+}
+
+.roster { list-style: none; margin: 10px 0; padding: 0; }
+.roster li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(231, 238, 246, 0.08);
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.share {
+  margin: 8px 0;
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+
+.other { margin: 8px 0 0; font-size: 0.88rem; }
+.other a { color: var(--silver); }
+
+h2 {
+  margin: 0;
+  font-family: "Bricolage Grotesk", Outfit, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
+  line-height: 0.95;
+}
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--silver);
+  color: #12141a;
+  border-radius: 999px;
+  padding: 12px 16px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.2s ease;
+}
+
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+#net {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  background: #c4b5ff;
+  color: #12141a;
+  text-align: center;
+  padding: 6px;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  #panel { max-height: 46vh; }
+  h1 { font-size: 3rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #toast { transition: none; }
+}
