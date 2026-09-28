@@ -4,55 +4,45 @@ const crypto = require("crypto");
 const os = require("os");
 
 const MAX_PLAYERS = 6;
-const COLS = 21;
-const ROWS = 25;
+const COLS = 13;
+const ROWS = 15;
 const BANKS = 2;
-const RADIUS = 0.32;
-const SPEED = 5.4;
-const CARRY = 3.2;
-const CURRENT = 2.6;
-const PICKUP = 0.7;
-const STEAL = 0.72;
+const RADIUS = 0.26;
+const SPEED = 7.4;
+const CARRY = 4.8;
+const CURRENT = 1.5;
+const PICKUP = 0.9;
+const STEAL = 0.95;
 const AIR_MAX = 100;
-const AIR_DRAIN = 11;
-const AIR_FILL = 52;
-const STUN = 1.4;
+const AIR_DRAIN = 3.2;
+const AIR_FILL = 70;
+const STUN = 0.8;
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const COLORS = ["#ffb085", "#ffe08a", "#7dffe1", "#d4b4ff", "#8ecbff", "#ff8fbe"];
 
 const RAW = [
-  "#####################",
-  "####.....HHH.....####",
-  "###......^^^......###",
-  "##......VVVVV......##",
-  "##.................##",
-  "###...............###",
-  "##..##.........##..##",
-  "##..#B.........B#..##",
-  "##..##....v....##..##",
-  "##.......vvv.......##",
-  "##......vvvvv......##",
-  "###......vvv......###",
-  "##.................##",
-  "##..VVV.......VVV..##",
-  "##.................##",
-  "###...............###",
-  "##......#...#......##",
-  "##......#.B.#......##",
-  "##......#...#......##",
-  "##......#####......##",
-  "###...............###",
-  "####.............####",
-  "#####...........#####",
-  "######.........######",
-  "#####################",
+  "#############",
+  "##...HHH...##",
+  "##...^^^...##",
+  "##..VVVVV..##",
+  "##.........##",
+  "##.#.....#.##",
+  "##.B.....B.##",
+  "##.#.....#.##",
+  "##.........##",
+  "##...vvv...##",
+  "##..VV.VV..##",
+  "##.........##",
+  "##...#B#...##",
+  "##.........##",
+  "#############",
 ];
 
 const rooms = new Map();
 
 function roundMs() {
   const n = Number(process.env.FATHOM_ROUND_MS);
-  return Number.isFinite(n) && n > 0 ? n : 150000;
+  return Number.isFinite(n) && n > 0 ? n : 90000;
 }
 
 function countMs() {
@@ -188,10 +178,15 @@ function circleHits(grid, x, y) {
 }
 
 function moveBody(grid, body, dx, dy) {
-  body.x += dx;
-  if (circleHits(grid, body.x, body.y)) body.x -= dx;
-  body.y += dy;
-  if (circleHits(grid, body.x, body.y)) body.y -= dy;
+  const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 0.18));
+  const sx = dx / steps;
+  const sy = dy / steps;
+  for (let i = 0; i < steps; i += 1) {
+    body.x += sx;
+    if (circleHits(grid, body.x, body.y)) body.x -= sx;
+    body.y += sy;
+    if (circleHits(grid, body.x, body.y)) body.y -= sy;
+  }
 }
 
 function flowOf(cell) {
@@ -240,8 +235,8 @@ function step(room, dt) {
       let dx = b.x - a.x;
       let dy = b.y - a.y;
       const dist = Math.hypot(dx, dy) || 0.001;
-      if (dist >= 0.52) continue;
-      const push = (0.52 - dist) * 0.45;
+      if (dist >= 0.46) continue;
+      const push = (0.46 - dist) * 0.35;
       dx /= dist;
       dy /= dist;
       moveBody(room.grid, a, -dx * push, -dy * push);
@@ -295,8 +290,8 @@ function step(room, dt) {
     player.bell = best.bell;
     best.bell = null;
     if (bell) bell.carriedBy = player.id;
-    player.stealLock = 0.45;
-    best.stealLock = 0.45;
+    player.stealLock = 1.5;
+    best.stealLock = 1.5;
   }
 
   for (const bell of room.bells) {

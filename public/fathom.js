@@ -21,9 +21,10 @@ const keys = new Set();
 let width = 0;
 let height = 0;
 let tile = 42;
+let originX = 0;
+let originY = 0;
 const bodies = new Map();
 const bellViews = new Map();
-let cam = { x: 10.5, y: 8 };
 let bubbles = [];
 
 const socket = io("/fathom", { autoConnect: true });
@@ -67,13 +68,23 @@ function resize() {
   canvas.width = Math.round(width * dpr);
   canvas.height = Math.round(height * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  tile = clamp(Math.min(width, height) / 9.2, 28, 64);
+  fitMap();
+}
+
+function fitMap() {
+  const cols = world && world.cols ? world.cols : 13;
+  const rows = world && world.rows ? world.rows : 15;
+  const top = world && world.status !== "lobby" ? 86 : 12;
+  const pad = 10;
+  tile = Math.max(8, Math.min((width - pad * 2) / cols, (height - top - pad) / rows));
+  originX = (width - cols * tile) / 2;
+  originY = top + Math.max(0, (height - top - pad - rows * tile) / 2);
 }
 
 function toScreen(x, y) {
   return {
-    x: width / 2 + (x - cam.x) * tile,
-    y: height / 2 + (y - cam.y) * tile,
+    x: originX + x * tile,
+    y: originY + y * tile,
   };
 }
 
@@ -178,6 +189,7 @@ function syncChrome() {
           <button type="button" class="leave" data-act="leave">Leave</button>
         </div>
         <div class="air" aria-hidden="true"><span></span></div>
+        <p class="goal"></p>
         <div class="chips"></div>`;
     }
     updateHud();
@@ -204,6 +216,16 @@ function updateHud() {
     clock.textContent = "";
   }
   const me = world.players.find((player) => player.id === world.you);
+  const goal = hud.querySelector(".goal");
+  if (goal) {
+    goal.textContent = !me || world.status !== "playing"
+      ? ""
+      : me.bell != null
+        ? "Carry the bell to the moon pool"
+        : me.banks
+          ? "One more bell"
+          : "Swim to a gold bell";
+  }
   air.style.width = `${me ? me.air : 0}%`;
   air.style.background = me && me.air < 30 ? "#ffb085" : "#7dffe1";
   chips.innerHTML = world.players.map((player) => {
@@ -233,7 +255,7 @@ function onWorld(next) {
     bodies.clear();
     bellViews.clear();
   }
-  if (next.camera) cam = { x: next.camera.x, y: next.camera.y };
+  fitMap();
   for (const diver of next.players) {
     if (!diver.inRound && next.status === "playing") continue;
     track(bodies, diver.id, diver.x, diver.y);
@@ -390,6 +412,9 @@ function drawIdle() {
 
 function drawCave() {
   const chart = world.chart;
+  let poolX = 0;
+  let poolY = 0;
+  let poolN = 0;
   for (let r = 0; r < chart.length; r += 1) {
     const row = chart[r];
     for (let c = 0; c < row.length; c += 1) {
@@ -398,7 +423,10 @@ function drawCave() {
       const point = toScreen(c, r);
       if (point.x < -tile || point.y < -tile || point.x > width + tile || point.y > height + tile) continue;
       if (cell === "H") {
-        ctx.fillStyle = "rgba(214, 239, 228, 0.16)";
+        poolX += c + 0.5;
+        poolY += r + 0.5;
+        poolN += 1;
+        ctx.fillStyle = "rgba(232, 244, 236, 0.72)";
         ctx.fillRect(point.x, point.y, tile, tile);
       } else if (cell === "V") {
         ctx.fillStyle = "rgba(125, 255, 225, 0.08)";
@@ -406,18 +434,23 @@ function drawCave() {
       }
     }
   }
-  ctx.fillStyle = "#143941";
+  if (poolN) {
+    const pool = toScreen(poolX / poolN, poolY / poolN);
+    ctx.fillStyle = "#102830";
+    ctx.font = `700 ${Math.max(11, tile * 0.28)}px Manrope, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText("POOL", pool.x, pool.y + 4);
+  }
+  ctx.fillStyle = "#1c4650";
   for (let r = 0; r < chart.length; r += 1) {
     const row = chart[r];
     for (let c = 0; c < row.length; c += 1) {
       if (row[c] !== "#") continue;
-      const point = toScreen(c + 0.5, r + 0.5);
-      if (point.x < -tile || point.y < -tile || point.x > width + tile || point.y > height + tile) continue;
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, tile * 0.62, 0, Math.PI * 2);
-      ctx.fill();
+      const point = toScreen(c, r);
+      ctx.fillRect(point.x - 0.5, point.y - 0.5, tile + 1, tile + 1);
     }
   }
+  drawGuide();
   ctx.strokeStyle = "rgba(125, 255, 225, 0.35)";
   ctx.lineWidth = 1.5;
   chart.forEach((row, r) => {
@@ -457,7 +490,7 @@ function drawCave() {
 
 function drawBell(x, y, banked, time) {
   const point = toScreen(x, y);
-  const radius = tile * (banked ? 0.16 : 0.22);
+  const radius = Math.max(7, tile * (banked ? 0.22 : 0.34));
   ctx.save();
   ctx.translate(point.x, point.y + Math.sin(time * 3 + x) * 1.5);
   ctx.fillStyle = "#f0c36a";
@@ -475,7 +508,7 @@ function drawBell(x, y, banked, time) {
 
 function drawDiver(x, y, player) {
   const point = toScreen(x, y);
-  const radius = tile * 0.28;
+  const radius = Math.max(10, tile * 0.34);
   ctx.save();
   ctx.shadowColor = player.color;
   ctx.shadowBlur = 16;
@@ -501,6 +534,51 @@ function drawDiver(x, y, player) {
     ctx.arc(point.x, point.y, radius + 4, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (player.air / 100));
     ctx.stroke();
   }
+}
+
+function drawGuide() {
+  if (!world || world.status !== "playing") return;
+  const me = world.players.find((player) => player.id === world.you && player.inRound);
+  if (!me) return;
+  const fromBody = bodies.get(me.id) || me;
+  let target = null;
+  if (me.bell != null) {
+    let sx = 0;
+    let sy = 0;
+    let n = 0;
+    world.chart.forEach((row, r) => {
+      row.split("").forEach((cell, c) => {
+        if (cell !== "H") return;
+        sx += c + 0.5;
+        sy += r + 0.5;
+        n += 1;
+      });
+    });
+    if (n) target = { x: sx / n, y: sy / n };
+  } else {
+    let best = Infinity;
+    for (const bell of world.bells) {
+      if (bell.banked) continue;
+      const view = bellViews.get(bell.id) || bell;
+      const dist = Math.hypot(view.x - fromBody.x, view.y - fromBody.y);
+      if (dist < best) {
+        best = dist;
+        target = view;
+      }
+    }
+  }
+  if (!target) return;
+  const a = toScreen(fromBody.x, fromBody.y);
+  const b = toScreen(target.x, target.y);
+  ctx.save();
+  ctx.strokeStyle = "rgba(240, 195, 106, 0.45)";
+  ctx.setLineDash([5, 7]);
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+  ctx.restore();
 }
 
 function drawStick() {

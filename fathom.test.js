@@ -46,7 +46,7 @@ test("rock stops a diver", () => {
   const room = roomWith([diver("a", 2.4, 4.5)]);
   room.players[0].ix = -1;
   for (let i = 0; i < 40; i += 1) fathom.step(room, 0.05);
-  assert.ok(room.players[0].x > 1.3);
+  assert.ok(room.players[0].x > 2);
 });
 
 test("a diver picks up a bell by touching it", () => {
@@ -60,10 +60,10 @@ test("a diver picks up a bell by touching it", () => {
 });
 
 test("touching a carrier takes the bell", () => {
-  const room = roomWith([diver("a", 8, 8), diver("b", 8.2, 8)]);
+  const room = roomWith([diver("a", 6, 6), diver("b", 6.25, 6)]);
   const bell = room.bells[0];
-  bell.x = 8;
-  bell.y = 8;
+  bell.x = 6;
+  bell.y = 6;
   bell.carriedBy = "a";
   room.players[0].bell = bell.id;
   fathom.step(room, 0.05);
@@ -96,7 +96,7 @@ test("running out of air drops the bell and returns you to the pool", () => {
   bell.carriedBy = player.id;
   bell.x = player.x;
   bell.y = player.y;
-  player.air = 0.2;
+  player.air = 0.05;
   fathom.step(room, 0.05);
   assert.equal(player.bell, null);
   assert.equal(bell.carriedBy, null);

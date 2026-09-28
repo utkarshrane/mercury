@@ -96,6 +96,12 @@ canvas {
   width: 0;
 }
 
+.goal {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+  color: #f0c36a;
+}
+
 .chips {
   display: flex;
   flex-wrap: wrap;
