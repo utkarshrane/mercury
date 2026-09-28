@@ -106,7 +106,7 @@ function fromScreen(px, py) {
   return inside({
     x: 0.5 + ((px - bowl.cx) * 0.4) / bowl.r,
     y: 0.5 + ((py - bowl.cy) * 0.4) / bowl.r,
-  }, 0.3);
+  }, 0.36);
 }
 
 function stepAmbient(dt) {
@@ -160,7 +160,7 @@ function drawDrops(drops) {
   ctx.fillStyle = "#10141c";
   ctx.fillRect(bowl.cx - bowl.r, bowl.cy - bowl.r, bowl.r * 2, bowl.r * 2);
   ctx.fillStyle = "#f4f7fb";
-  const radius = bowl.r * 0.12;
+  const radius = Math.max(34, bowl.r * 0.2);
   let sx = 0;
   let sy = 0;
   const points = drops.map((drop) => {
@@ -251,10 +251,18 @@ function frame(now) {
   ctx.fillStyle = "#06070b";
   ctx.fillRect(0, 0, width, height);
   if (ambientOn) stepAmbient(dt);
+  const aim = world && world.status === "playing" ? (pointer || keyTarget) : null;
   for (const drop of shown) {
     if (drop.tx == null) continue;
     drop.x += (drop.tx - drop.x) * 0.35;
     drop.y += (drop.ty - drop.y) * 0.35;
+    if (!aim) continue;
+    const dx = aim.x - drop.x;
+    const dy = aim.y - drop.y;
+    if (Math.hypot(dx, dy) < 0.28) {
+      drop.x = aim.x;
+      drop.y = aim.y;
+    }
   }
   const drops = ambientOn ? ambient : shown;
   drawDrops(drops);
@@ -265,7 +273,7 @@ function frame(now) {
     if (keys.has("arrowright") || keys.has("d")) keyTarget.x = clamp(keyTarget.x + speed, 0.08, 0.92);
     if (keys.has("arrowup") || keys.has("w")) keyTarget.y = clamp(keyTarget.y - speed, 0.08, 0.92);
     if (keys.has("arrowdown") || keys.has("s")) keyTarget.y = clamp(keyTarget.y + speed, 0.08, 0.92);
-    inside(keyTarget, 0.3);
+    inside(keyTarget, 0.36);
   }
   requestAnimationFrame(frame);
 }

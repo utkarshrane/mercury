@@ -338,7 +338,7 @@ function step(room, dt) {
       if (!bell || bell.banked) continue;
       bell.banked = true;
       bell.carriedBy = null;
-      bell.x = room.hatch.x + (bell.id - 1) * 0.55;
+      bell.x = room.hatch.x + (bell.id - 1) * 1.25;
       bell.y = room.hatch.y;
       player.banks += 1;
     }
@@ -353,8 +353,10 @@ function step(room, dt) {
     if (!carrier) continue;
     const carried = heldIds(carrier);
     const index = Math.max(0, carried.indexOf(bell.id));
-    bell.x = carrier.x + (index - (carried.length - 1) / 2) * 0.42;
-    bell.y = carrier.y;
+    const span = carried.length <= 1 ? 0 : Math.min(1.4, 0.7 * (carried.length - 1));
+    const angle = -Math.PI / 2 + (carried.length <= 1 ? 0 : -span / 2 + (span * index) / (carried.length - 1));
+    bell.x = carrier.x + Math.cos(angle) * 0.95;
+    bell.y = carrier.y + Math.sin(angle) * 0.95;
   }
   return winner;
 }
@@ -447,6 +449,7 @@ function attachFathom(io, httpServer) {
       need: BANKS,
       winnerId: room.winnerId,
       reason: room.reason,
+      results: room.results || null,
       lanOrigins: lanOrigins(portOf()),
       cols: COLS,
       rows: ROWS,
@@ -500,6 +503,7 @@ function attachFathom(io, httpServer) {
     room.chart = level.chart;
     room.winnerId = null;
     room.reason = null;
+    room.results = null;
     placePlayers(room);
     room.status = "countdown";
     room.endsAt = Date.now() + countMs();
@@ -532,6 +536,12 @@ function attachFathom(io, httpServer) {
       player.ix = 0;
       player.iy = 0;
     }
+    room.results = room.players.map((player) => ({
+      id: player.id,
+      name: player.name,
+      color: player.color,
+      banks: player.banks,
+    }));
     emitWorld(room);
   }
 

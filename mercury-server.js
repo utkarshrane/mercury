@@ -5,7 +5,7 @@ const os = require("os");
 
 const MAX_PLAYERS = 6;
 const DROPS = 56;
-const BOWL = 0.24;
+const BOWL = 0.36;
 const HOLD = 0.22;
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const COLORS = ["#c4b5ff", "#ffb15a", "#7dffe1", "#ff7aa2", "#d6ff6b", "#8ecbff"];
@@ -129,7 +129,7 @@ function step(drops, players, dt) {
       b.y += dy * push;
     }
   }
-  for (const player of active) clampInside(player, 0.3);
+  for (const player of active) clampInside(player, BOWL);
 
   let cx = 0;
   let cy = 0;
@@ -183,15 +183,11 @@ function step(drops, players, dt) {
     }
     if (!best) continue;
     best.score += 1;
-    drop.x += (best.x - drop.x) * 0.62;
-    drop.y += (best.y - drop.y) * 0.62;
-    const ox = drop.x - 0.5;
-    const oy = drop.y - 0.5;
-    const radius = Math.hypot(ox, oy);
-    if (radius > BOWL) {
-      drop.x = 0.5 + (ox / radius) * BOWL;
-      drop.y = 0.5 + (oy / radius) * BOWL;
-    }
+    drop.x = best.x;
+    drop.y = best.y;
+    drop.vx = 0;
+    drop.vy = 0;
+    clampInside(drop, BOWL);
   }
 }
 

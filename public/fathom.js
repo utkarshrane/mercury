@@ -140,8 +140,9 @@ function lobbyHtml() {
 }
 
 function galleryHtml() {
-  const ranked = [...world.players].sort((a, b) => b.banks - a.banks || a.name.localeCompare(b.name));
-  const winner = world.players.find((player) => player.id === world.winnerId);
+  const board = world.results && world.results.length ? world.results : world.players;
+  const ranked = [...board].sort((a, b) => b.banks - a.banks || a.name.localeCompare(b.name));
+  const winner = board.find((player) => player.id === world.winnerId);
   const youWon = winner && winner.id === world.you;
   let title = "The bells stayed down";
   if (winner && world.reason === "banked") title = youWon ? "You surfaced the bells" : `${winner.name} surfaced the bells`;
@@ -435,13 +436,7 @@ function drawCave() {
       }
     }
   }
-  if (poolN) {
-    const pool = toScreen(poolX / poolN, poolY / poolN);
-    ctx.fillStyle = "#102830";
-    ctx.font = `700 ${Math.max(11, tile * 0.28)}px Manrope, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText("POOL", pool.x, pool.y + 4);
-  }
+  const poolLabel = poolN ? { x: poolX / poolN, y: poolY / poolN } : null;
   ctx.fillStyle = "#1c4650";
   for (let r = 0; r < chart.length; r += 1) {
     const row = chart[r];
@@ -474,18 +469,25 @@ function drawCave() {
     ctx.arc(point.x, point.y, 1.5 + bubble.s, 0, Math.PI * 2);
     ctx.fill();
   }
-  if (world.bells) {
-    for (const bell of world.bells) {
-      const view = bellViews.get(bell.id) || bell;
-      drawBell(view.x, view.y, bell.banked, time);
-    }
-  }
   if (world.players) {
     for (const player of world.players) {
       if (world.status === "playing" && !player.inRound) continue;
       const view = bodies.get(player.id) || player;
       drawDiver(view.x, view.y, player);
     }
+  }
+  if (world.bells) {
+    for (const bell of world.bells) {
+      const view = bellViews.get(bell.id) || bell;
+      drawBell(view.x, view.y, bell.banked, time);
+    }
+  }
+  if (poolLabel) {
+    const pool = toScreen(poolLabel.x, poolLabel.y - 0.85);
+    ctx.fillStyle = "#e8f4ec";
+    ctx.font = `700 ${Math.max(11, tile * 0.28)}px Manrope, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText("POOL", pool.x, pool.y);
   }
 }
 
@@ -528,6 +530,11 @@ function drawDiver(x, y, player) {
   ctx.font = `600 ${Math.max(11, tile * 0.28)}px Manrope, sans-serif`;
   ctx.textAlign = "center";
   ctx.fillText(player.name, point.x, point.y - radius - 6);
+  if (player.holding > 1) {
+    ctx.fillStyle = "#f0c36a";
+    ctx.font = `700 ${Math.max(12, tile * 0.32)}px Manrope, sans-serif`;
+    ctx.fillText(String(player.holding), point.x, point.y + 4);
+  }
   if (player.id === world.you) {
     ctx.strokeStyle = "rgba(244,239,228,0.8)";
     ctx.lineWidth = 2;

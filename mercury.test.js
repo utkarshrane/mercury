@@ -24,9 +24,9 @@ test("a hand on the white spot keeps it stuck", () => {
   const players = [
     { x: 0.62, y: 0.5, tx: 0.62, ty: 0.5, pulling: true, connected: true, inRound: true, score: 0 },
   ];
-  for (let i = 0; i < 8; i += 1) mercury.step(drops, players, 0.05);
-  assert.ok(drops[0].x > 0.58);
-  assert.ok(players[0].score >= 8);
+  mercury.step(drops, players, 0.05);
+  assert.ok(Math.hypot(drops[0].x - players[0].x, drops[0].y - players[0].y) < 0.02);
+  assert.equal(players[0].score, 1);
 });
 
 test("a held magnet draws the silver toward that hand", () => {
@@ -35,7 +35,7 @@ test("a held magnet draws the silver toward that hand", () => {
     { x: 0.78, y: 0.5, tx: 0.78, ty: 0.5, pulling: true, connected: true, inRound: true, score: 0 },
   ];
   for (let i = 0; i < 30; i += 1) mercury.step(drops, players, 0.05);
-  assert.ok(drops[0].x > 0.6);
+  assert.ok(Math.hypot(drops[0].x - players[0].x, drops[0].y - players[0].y) < 0.02);
 });
 
 test("two players share one bowl and only the host starts", async () => {
