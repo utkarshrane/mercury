@@ -1,0 +1,118 @@
+:root {
+  --bg: #f4f1e8;
+  --ink: #1c2430;
+  --muted: #5c6570;
+  --card: #fffdf8;
+  --line: #e2dccd;
+  --green: #1f6b4a;
+  --green-soft: #e5f3ea;
+  --red: #9c341f;
+  --shadow: 0 14px 34px rgba(28, 36, 48, 0.08);
+  font-family: "Outfit", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { background: radial-gradient(circle at top, #fffdf8, var(--bg) 46%); }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+
+#app { max-width: 720px; margin: 0 auto; padding: 20px 16px 48px; }
+.brand { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.mark { font-family: "Fraunces", serif; letter-spacing: 0.16em; font-size: 14px; font-weight: 680; }
+.clock, .pill {
+  font-variant-numeric: tabular-nums;
+  font-weight: 680;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+h1, h2 { font-family: "Fraunces", serif; font-weight: 680; letter-spacing: -0.03em; margin: 0; }
+h1 { font-size: clamp(40px, 8vw, 64px); line-height: 0.95; }
+.lede, .quiet { color: var(--muted); line-height: 1.45; }
+.sheet, .prompt {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+  margin-top: 14px;
+}
+.steps { margin: 8px 0 0; padding-left: 18px; }
+.steps li { margin: 8px 0; }
+label { display: block; font-size: 13px; font-weight: 680; margin-bottom: 6px; }
+input {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.buttons { display: grid; gap: 8px; }
+@media (min-width: 560px) { .buttons.pair { grid-template-columns: 1fr 1fr; } }
+.primary, .ghost, .hold {
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-weight: 680;
+}
+.primary { background: var(--ink); color: #fffdf8; }
+.ghost, .hold { background: white; border: 1px solid var(--line); }
+.hold { margin-top: 10px; width: 100%; }
+.hold.on { background: var(--ink); color: white; }
+.primary:disabled { opacity: 0.45; }
+.error { color: var(--red); min-height: 1.2em; }
+.code { font-family: "Fraunces", serif; font-size: 40px; letter-spacing: 0.12em; margin: 6px 0; }
+.seats { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.seat {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+.prompt { background: var(--ink); color: #fffdf8; }
+.prompt p { margin: 8px 0 0; font-family: "Fraunces", serif; font-size: 28px; line-height: 1.15; }
+.hand { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.tile {
+  text-align: left;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  min-height: 96px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+.tile.fit { border-color: var(--green); }
+.tile.on { background: var(--green); color: white; border-color: var(--green); }
+.tile.off { opacity: 0.38; }
+.tile .kind { font-size: 12px; font-weight: 680; letter-spacing: 0.04em; text-transform: uppercase; }
+.tile strong { display: block; font-family: "Fraunces", serif; font-size: 26px; margin-top: 8px; }
+.note {
+  background: var(--green-soft);
+  color: var(--green);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-top: 12px;
+  font-weight: 560;
+}
+.table { display: grid; gap: 8px; margin-top: 12px; }
+.played {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+}
+.played.fit { border-color: var(--green); }
+.played b { font-family: "Fraunces", serif; font-size: 22px; }
+.links { display: flex; gap: 12px; margin-top: 18px; }
+.links a { color: var(--muted); }
+.score { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); }
