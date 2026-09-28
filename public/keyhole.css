@@ -274,7 +274,9 @@ button.choice {
   padding: 10px 14px;
   border-radius: 14px;
   border: 1px solid rgba(246, 240, 230, 0.16);
-  background: #221a16;
+  background: linear-gradient(110deg, #221a16 30%, #3d2e24 48%, #221a16 66%);
+  background-size: 220% 100%;
+  animation: choice-sheen 2.6s linear infinite;
   transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
 }
 
@@ -308,6 +310,11 @@ button.choice.locked {
 @keyframes lock-glow {
   0%, 100% { box-shadow: 0 0 0 rgba(231, 177, 90, 0); }
   50% { box-shadow: 0 0 16px rgba(231, 177, 90, 0.45); }
+}
+
+@keyframes choice-sheen {
+  from { background-position: 120% 0; }
+  to { background-position: -120% 0; }
 }
 
 .who { color: var(--muted); font-size: 0.78rem; text-align: right; }

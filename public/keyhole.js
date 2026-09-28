@@ -466,7 +466,7 @@ function drawHearth(x, y, live) {
 }
 
 function drawPendant(x, y, live) {
-  const swing = Math.sin(live * 1.25) * 0.22;
+  const swing = Math.sin(live * 1.35) * 0.42;
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(swing);
@@ -517,14 +517,14 @@ function drawPendant(x, y, live) {
   }
 }
 
-function drawPerson(x, y, scale, token, k, elapsed, moving) {
+function drawPerson(x, y, scale, token, k, elapsed, moving, facing) {
   const walking = moving !== false;
-  const bob = walking ? Math.abs(Math.sin(elapsed * 12)) * -7 : Math.sin(elapsed * 2.4) * 2.2;
-  const step = walking ? Math.sin(elapsed * 12) : Math.sin(elapsed * 2) * 0.15;
-  const wave = Math.sin(elapsed * 5) * 10;
+  const bob = walking ? Math.abs(Math.sin(elapsed * 12)) * -10 : Math.sin(elapsed * 2.4) * 3;
+  const step = walking ? Math.sin(elapsed * 12) : Math.sin(elapsed * 2) * 0.2;
+  const wave = Math.sin(elapsed * 6);
   ctx.save();
   ctx.translate(x, y + bob);
-  ctx.scale(scale, scale);
+  ctx.scale(scale * (facing < 0 ? -1 : 1), scale);
   ctx.globalAlpha = clamp(k, 0, 1);
   ctx.fillStyle = "rgba(0,0,0,0.25)";
   ctx.beginPath();
@@ -542,7 +542,7 @@ function drawPerson(x, y, scale, token, k, elapsed, moving) {
   ctx.moveTo(-14, 4);
   ctx.lineTo(-24, 16 + step * 10);
   ctx.moveTo(14, 4);
-  ctx.lineTo(22 + wave * 0.35, 6 - Math.abs(wave) * 0.45);
+  ctx.lineTo(28, -6 + wave * 22);
   ctx.stroke();
   ctx.fillStyle = cloth;
   if (token === "blue" || token === "green") {
@@ -723,6 +723,10 @@ function drawWindowEvent(token, rect, k, elapsed) {
       ctx.lineTo(x - 5, y + 14);
       ctx.stroke();
     }
+    if (Math.sin(elapsed * 1.7) > 0.9) {
+      ctx.fillStyle = "rgba(230, 240, 255, 0.45)";
+      ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+    }
     ctx.fillStyle = "rgba(190, 214, 230, 0.55)";
     for (let i = 0; i < 8; i += 1) {
       const splash = (elapsed * 3 + i * 0.4) % 1;
@@ -784,7 +788,7 @@ function drawWindowEvent(token, rect, k, elapsed) {
     }
   } else {
     const x = rect.x + rect.w * 0.5 + Math.sin(elapsed * 1.15) * rect.w * 0.22;
-    const y = rect.y + rect.h * 0.62 + Math.abs(Math.sin(elapsed * 6)) * -2;
+    const y = rect.y + rect.h * 0.62 + Math.abs(Math.sin(elapsed * 3.2)) * -16;
     const wag = Math.sin(elapsed * 9) * 14;
     ctx.globalAlpha = k;
     ctx.fillStyle = "#f7f4ee";
@@ -914,13 +918,25 @@ function drawBeat(beat, rects, time) {
   if (k <= 0) return;
   const rect = rects[beat.zone];
   if (!rect) return;
+  if (elapsed < 0.85) {
+    const ring = elapsed / 0.85;
+    ctx.save();
+    ctx.globalAlpha = (1 - ring) * 0.85;
+    ctx.strokeStyle = "#f6e27a";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(rect.x + rect.w / 2, rect.y + rect.h / 2, 10 + ring * Math.max(rect.w, rect.h) * 0.85, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
   if (beat.zone === "door") {
-    const pace = k < 0.98 ? k : 0.15 + (Math.sin((elapsed - 0.7) * 1.8) * 0.5 + 0.5) * 0.7;
+    const paceWave = Math.sin((elapsed - 0.7) * 1.8);
+    const pace = k < 0.98 ? k : 0.15 + (paceWave * 0.5 + 0.5) * 0.7;
     const x = rect.x + rect.w * (0.22 + 0.56 * pace);
     ctx.save();
     roundRect(rect.x - 6, rect.y - 6, rect.w + 12, rect.h + 10, 10);
     ctx.clip();
-    drawPerson(x, rect.y + rect.h * 0.42, rect.h / 88, beat.token, k, elapsed, true);
+    drawPerson(x, rect.y + rect.h * 0.42, rect.h / 88, beat.token, k, elapsed, true, paceWave);
     ctx.restore();
   } else if (beat.zone === "table") {
     drawTableItem(beat.token, rect, k, elapsed);
@@ -1067,6 +1083,18 @@ function drawParlor(rects, live, time) {
   lamp.addColorStop(1, "rgba(231, 177, 90, 0)");
   ctx.fillStyle = lamp;
   ctx.fillRect(x, y, w, h);
+  ctx.save();
+  roundRect(x, y, w, h, 28);
+  ctx.clip();
+  ctx.translate(x + w * 0.5, y);
+  ctx.rotate(Math.sin(live * 0.85) * 0.6);
+  ctx.fillStyle = "rgba(246, 220, 150, 0.16)";
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(-80, h * 1.3);
+  ctx.lineTo(80, h * 1.3);
+  ctx.fill();
+  ctx.restore();
   drawHearth(x + w * 0.84, y + h * 0.78, live);
   drawPendant(x + w * 0.5, y + 4, live);
   ctx.save();
@@ -1115,6 +1143,10 @@ function frame(now) {
   const rects = layout(width, height);
   const live = performance.now() / 1000;
   const time = motionNow();
+  const driftX = Math.sin(live * 0.7) * 12;
+  const driftY = Math.cos(live * 0.5) * 7;
+  ctx.save();
+  ctx.translate(driftX, driftY);
   drawParlor(rects, live, time);
   const beats = world && !world.waiting ? world.beats || [] : [];
   for (const beat of beats) drawBeat(beat, rects, time);
@@ -1123,6 +1155,7 @@ function frame(now) {
       if (rects[hidden.zone]) drawVeil(rects[hidden.zone], live);
     }
   }
+  ctx.restore();
   if (world && (world.status === "watch" || world.status === "ask")) syncChrome();
   requestAnimationFrame(frame);
 }
