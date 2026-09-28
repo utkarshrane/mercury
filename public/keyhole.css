@@ -4,7 +4,7 @@
   --muted: #cbbba8;
   --brass: #e7b15a;
   --brass-deep: #a8742e;
-  --card: rgba(22, 16, 13, 0.94);
+  --card: #16110e;
   --line: rgba(231, 177, 90, 0.32);
   --danger: #e23d2b;
   --good: #8fbf7a;
@@ -269,7 +269,8 @@ button.choice {
   padding: 10px 14px;
   border-radius: 14px;
   border: 1px solid rgba(246, 240, 230, 0.16);
-  background: rgba(255, 255, 255, 0.03);
+  background: #221a16;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
 }
 
 button.choice.mine { border-color: var(--brass); }
