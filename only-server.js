@@ -40,12 +40,12 @@ const rooms = new Map();
 
 function playMs() {
   const n = Number(process.env.ONLY_PLAY_MS);
-  return Number.isFinite(n) && n > 0 ? n : 12000;
+  return Number.isFinite(n) && n > 0 ? n : 14000;
 }
 
 function revealMs() {
   const n = Number(process.env.ONLY_REVEAL_MS);
-  return Number.isFinite(n) && n > 0 ? n : 4500;
+  return Number.isFinite(n) && n > 0 ? n : 5500;
 }
 
 function roundCount() {
@@ -97,13 +97,30 @@ function shuffle(list) {
   return copy;
 }
 
-function makeDeck() {
-  const deck = [];
-  for (const card of CARDS) {
-    deck.push({ ...card, key: `${card.id}-a` });
-    deck.push({ ...card, key: `${card.id}-b` });
+function giveCard(hand, card, used) {
+  if (hand.length >= HAND) return false;
+  if (hand.some((item) => item.id === card.id)) return false;
+  if ((used[card.id] || 0) >= 2) return false;
+  const copy = (used[card.id] || 0) === 0 ? "a" : "b";
+  used[card.id] = (used[card.id] || 0) + 1;
+  hand.push({ ...card, key: `${card.id}-${copy}` });
+  return true;
+}
+
+function dealHands(count) {
+  const hands = Array.from({ length: count }, () => []);
+  const used = {};
+  const first = shuffle(CARDS);
+  first.forEach((card, index) => giveCard(hands[index % count], card, used));
+  const again = shuffle(CARDS);
+  for (let pass = 0; pass < 8 && hands.some((hand) => hand.length < HAND); pass += 1) {
+    for (const hand of hands) {
+      if (hand.length >= HAND) continue;
+      const card = again.find((item) => giveCard(hand, item, used)) || shuffle(CARDS).find((item) => giveCard(hand, item, used));
+      if (!card) break;
+    }
   }
-  return shuffle(deck);
+  return hands;
 }
 
 function chooseTag(hands) {
@@ -231,14 +248,14 @@ function attachOnly(io, httpServer) {
   }
 
   function deal(room) {
-    const deck = makeDeck();
+    const seated = room.players.filter((player) => player.inRound);
+    const hands = dealHands(seated.length);
     room.hands = {};
+    seated.forEach((player, index) => {
+      room.hands[player.id] = hands[index];
+    });
     for (const player of room.players) {
-      if (!player.inRound) {
-        room.hands[player.id] = [];
-        continue;
-      }
-      room.hands[player.id] = deck.splice(0, HAND);
+      if (!player.inRound) room.hands[player.id] = [];
     }
   }
 
@@ -500,6 +517,7 @@ module.exports = {
   CARDS,
   LINES,
   chooseTag,
+  dealHands,
   judge,
   attachOnly,
   resetRooms,

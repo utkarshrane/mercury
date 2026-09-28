@@ -29,6 +29,19 @@ test("one fitting card scores and two fitting cards cancel", () => {
   assert.equal(miss.awarded, "leo");
 });
 
+test("each hand is five different cards", () => {
+  for (let deal = 0; deal < 30; deal += 1) {
+    for (const count of [2, 3, 4]) {
+      const hands = only.dealHands(count);
+      assert.equal(hands.length, count);
+      for (const hand of hands) {
+        assert.equal(hand.length, 5);
+        assert.equal(new Set(hand.map((card) => card.id)).size, 5);
+      }
+    }
+  }
+});
+
 test("a tense line is one both hands can answer", () => {
   const tag = only.chooseTag({
     ada: [{ tags: ["hot", "drink"] }, { tags: ["soft"] }],

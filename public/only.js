@@ -58,8 +58,34 @@ function home() {
     </nav>
   `);
 }
+const WASH = {
+  tea: "#c47a1a", soup: "#c4553a", lamp: "#d4a017", mango: "#e08a2c",
+  cake: "#c46b8a", ice: "#3d7ea6", coin: "#a67c2d", key: "#8a6a3b",
+  bell: "#2f6f4e", drum: "#1d4e89", moon: "#5b4b8a", wool: "#8d6e63",
+};
+function chip(card) {
+  const wash = WASH[card.id] || "#1c2430";
+  return `<i class="chip" style="background:${wash}">${card.name.slice(0, 1)}</i>`;
+}
+function seatLine(player) {
+  const you = player.id === world.you;
+  const lock = world.status === "play" && player.ready ? (you ? " · played" : " · locked") : "";
+  return `${player.name}${player.host ? " · host" : ""} · ${player.score}${lock}`;
+}
 function seats() {
-  return `<div class="seats">${world.players.map((player) => `<span class="seat">${player.name}${player.host ? " · host" : ""} · ${player.score}</span>`).join("")}</div>`;
+  return `<div class="seats">${world.players.map((player) => `<span class="seat${world.status === "play" && player.ready ? " locked" : ""}">${seatLine(player)}</span>`).join("")}</div>`;
+}
+function statusLine() {
+  const others = world.players.filter((player) => player.id !== world.you && player.ready);
+  const mine = world.choice === "hold"
+    ? "You are holding."
+    : world.choice
+      ? `You played ${((world.hand || []).find((card) => card.key === world.choice) || {}).name || "a card"}.`
+      : (world.hand || []).some((card) => card.fit)
+        ? "Tap a card that fits, or hold."
+        : "Nothing in your hand fits.";
+  const them = others.length ? ` ${others.map((player) => player.name).join(" and ")} locked in.` : "";
+  return mine + them;
 }
 function lobby() {
   const you = world.players.find((player) => player.id === world.you);
@@ -88,15 +114,18 @@ function play() {
   }
   painted = key;
   const any = world.hand.some((card) => card.fit);
+  const cards = [...world.hand].sort((a, b) => Number(b.fit) - Number(a.fit) || a.name.localeCompare(b.name));
   shell(`
     <section class="prompt">
       <div>Round ${world.round} of ${world.rounds}</div>
       <p>Play ${world.line}.</p>
     </section>
     ${seats()}
-    <div class="hand">${world.hand.map((card) => `
+    <p class="status" id="status"></p>
+    <div class="hand">${cards.map((card) => `
       <button class="tile${card.fit ? " fit" : " off"}" data-key="${card.key}" ${card.fit ? "" : "disabled"}>
-        <span class="kind">${card.fit ? "Fits" : "Not this"}</span>
+        ${chip(card)}
+        <span class="kind">${card.fit ? "Fits" : "Stays"}</span>
         <strong>${card.name}</strong>
       </button>
     `).join("")}</div>
@@ -109,6 +138,14 @@ function mark() {
   app.querySelectorAll(".tile").forEach((tile) => tile.classList.toggle("on", tile.dataset.key === world.choice));
   const hold = app.querySelector("#hold");
   if (hold) hold.classList.toggle("on", world.choice === "hold");
+  app.querySelectorAll(".seat").forEach((node, index) => {
+    const player = world.players[index];
+    if (!player) return;
+    node.textContent = seatLine(player);
+    node.classList.toggle("locked", world.status === "play" && player.ready);
+  });
+  const status = app.querySelector("#status");
+  if (status) status.textContent = statusLine();
 }
 function reveal() {
   painted = "";
@@ -119,9 +156,10 @@ function reveal() {
   shell(`
     <section class="prompt"><p>${world.verdict}</p></section>
     <div class="table">${world.table.map((play) => `
-      <div class="played${play.fit ? " fit" : ""}">
+      <div class="played${play.fit ? " fit" : ""}${play.playerId === world.awarded ? " scored" : ""}">
         <span>${play.name}</span>
         <b>${play.card ? play.card.name : "Held"}</b>
+        <em>${play.card ? (play.fit ? "Fit" : "Missed") : ""}</em>
       </div>
     `).join("")}</div>
     <p class="quiet">The line was ${world.line}.</p>
