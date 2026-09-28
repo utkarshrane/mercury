@@ -33,6 +33,9 @@ app.get("/dice", (_req, res) => {
 app.get("/bloom", (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "bloom.html"));
 });
+app.get("/fathom", (_req, res) => {
+  res.sendFile(path.join(__dirname, "public", "fathom.html"));
+});
 app.use(express.static(path.join(__dirname, "public")));
 
 function turnMs() {
@@ -560,9 +563,11 @@ if (require.main === module) {
   const io = attach(server);
   require("./bloom-server").attachBloom(io, server);
   require("./mercury-server").attachMercury(io, server);
+  require("./fathom-server").attachFathom(io, server);
   server.listen(PORT, () => {
     const address = server.address();
     const port = address && typeof address === "object" ? address.port : PORT;
+    console.log(`FATHOM is live at http://localhost:${port}/fathom`);
     console.log(`MERCURY is live at http://localhost:${port}`);
     console.log(`BLOOM is at http://localhost:${port}/bloom`);
     console.log(`CALL IT is at http://localhost:${port}/dice`);

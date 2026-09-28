@@ -302,7 +302,7 @@ function homeHtml() {
       </div>
     </div>
     <p class="hint">Drag it. Hold it. Most silver wins.</p>
-    <p class="other"><a href="/bloom">Play Bloom</a> · <a href="/dice">Play Call it</a></p>`;
+    <p class="other"><a href="/fathom">Play Fathom</a> · <a href="/bloom">Play Bloom</a> · <a href="/dice">Play Call it</a></p>`;
 }
 
 function lobbyHtml() {
