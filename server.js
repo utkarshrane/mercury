@@ -42,6 +42,9 @@ app.get("/keyhole", (_req, res) => {
 app.get("/vital", (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "vital.html"));
 });
+app.get("/nest", (_req, res) => {
+  res.sendFile(path.join(__dirname, "public", "nest.html"));
+});
 app.use(express.static(path.join(__dirname, "public")));
 
 function turnMs() {
@@ -576,9 +579,11 @@ if (require.main === module) {
   require("./fathom-server").attachFathom(io, server);
   require("./keyhole-server").attachKeyhole(io, server);
   require("./vital-server").attachVital(io, server);
+  require("./nest-server").attachNest(io, server);
   server.listen(PORT, () => {
     const address = server.address();
     const port = address && typeof address === "object" ? address.port : PORT;
+    console.log(`NEST is live at http://localhost:${port}/nest`);
     console.log(`VITAL is live at http://localhost:${port}/vital`);
     console.log(`KEYHOLE is live at http://localhost:${port}/keyhole`);
     console.log(`FATHOM is live at http://localhost:${port}/fathom`);
