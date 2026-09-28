@@ -77,9 +77,13 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   font-variant-numeric: tabular-nums;
   font-size: 1.35rem;
   font-weight: 600;
+  transform-origin: center;
 }
 
-.clock.urgent { color: var(--brass); }
+.clock.urgent {
+  color: var(--brass);
+  animation: clock-pulse 0.7s ease-in-out infinite;
+}
 
 #hud .leave {
   pointer-events: auto;
@@ -116,9 +120,10 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   left: 0;
   transform: none;
   width: 100%;
-  max-height: min(58vh, 480px);
+  max-height: min(48vh, 420px);
   border-radius: 22px 22px 0 0;
   padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  animation: sheet-up 0.42s ease;
 }
 
 #panel.sheet.reveal { max-height: min(42vh, 300px); }
@@ -273,11 +278,36 @@ button.choice {
   transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
 }
 
-button.choice.mine { border-color: var(--brass); }
+button.choice.mine {
+  border-color: var(--brass);
+  animation: pick-pop 0.35s ease;
+}
 
 button.choice.locked {
   background: rgba(231, 177, 90, 0.18);
   border-color: var(--brass);
+  animation: lock-glow 1.1s ease-in-out infinite;
+}
+
+@keyframes clock-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.14); }
+}
+
+@keyframes sheet-up {
+  from { transform: translateY(36px); opacity: 0.2; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes pick-pop {
+  0% { transform: scale(0.96); }
+  55% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+@keyframes lock-glow {
+  0%, 100% { box-shadow: 0 0 0 rgba(231, 177, 90, 0); }
+  50% { box-shadow: 0 0 16px rgba(231, 177, 90, 0.45); }
 }
 
 .who { color: var(--muted); font-size: 0.78rem; text-align: right; }
