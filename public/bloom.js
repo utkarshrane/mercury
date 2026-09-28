@@ -213,8 +213,8 @@ function drawPlayers(now) {
     if (player.id === world.you && world.status === "playing") {
       const mag = Math.hypot(vector.x, vector.y);
       if (mag > 0.12) {
-        view.x = clamp(view.x + vector.x * SPEED * dt, 0.015, 0.985);
-        view.y = clamp(view.y + vector.y * SPEED * dt, 0.015, 0.985);
+        view.x = clamp(view.x + vector.x * SPEED * dt, 0.08, 0.92);
+        view.y = clamp(view.y + vector.y * SPEED * dt, 0.08, 0.92);
         localStamp(view.x, view.y, player.slot);
       }
       view.x += (player.x - view.x) * 0.18;
@@ -274,12 +274,12 @@ function frame(now) {
   ctx.globalAlpha = 1;
   ctx.drawImage(paint, court.x, court.y, court.w, court.h);
   ctx.restore();
-  drawPlayers(now);
   ctx.restore();
   ctx.strokeStyle = "rgba(244, 239, 230, 0.18)";
   ctx.lineWidth = 1.5;
   roundRect(ctx, court.x, court.y, court.w, court.h, 28);
   ctx.stroke();
+  drawPlayers(now);
   lastFrame = now;
   requestAnimationFrame(frame);
 }
@@ -342,11 +342,11 @@ function lobbyHtml() {
         return `<li><i class="swatch" style="background:${esc(player.color)}"></i><span>${esc(player.name)}${marks ? ` · ${esc(marks)}` : ""}</span></li>`;
       }).join("")}
     </ul>
-    ${rulesHtml()}
     ${canStart
       ? `<button type="button" class="primary" data-act="start" ${here < 2 ? "disabled" : ""}>Start the bloom</button>
          <p class="wait">${here < 2 ? "Need at least two players." : `${here} here. Start when everyone can see the rules.`}</p>`
       : `<p class="wait">Waiting for the host to start.</p>`}
+    ${rulesHtml()}
     <button type="button" class="ghost" data-act="leave">Leave</button>`;
 }
 
@@ -411,9 +411,9 @@ function syncChrome() {
   }
   const showCount = world && world.status === "countdown";
   countEl.hidden = !showCount;
-  if (showCount) {
-    countEl.textContent = String(Math.max(1, Math.ceil((world.endsAt - Date.now()) / 1000)));
-  }
+  countEl.textContent = showCount
+    ? String(Math.max(1, Math.ceil((world.endsAt - Date.now()) / 1000)))
+    : "";
   banner.hidden = true;
   document.title = world ? `BLOOM · ${world.code}` : "BLOOM";
 }

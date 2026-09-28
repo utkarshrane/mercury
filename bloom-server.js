@@ -246,8 +246,8 @@ function attachBloom(io, httpServer) {
         x /= mag;
         y /= mag;
       }
-      player.x = Math.min(0.985, Math.max(0.015, player.x + x * SPEED * dt));
-      player.y = Math.min(0.985, Math.max(0.015, player.y + y * SPEED * dt));
+      player.x = Math.min(0.92, Math.max(0.08, player.x + x * SPEED * dt));
+      player.y = Math.min(0.92, Math.max(0.08, player.y + y * SPEED * dt));
       for (const idx of paintDisc(room.grid, room.scores, player.slot, player.x, player.y)) {
         changed.push(idx, player.slot);
       }

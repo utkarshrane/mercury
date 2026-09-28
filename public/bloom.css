@@ -52,6 +52,12 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 #hud, #banner, #panel, #count, #net, #toast { z-index: 2; }
 
+#count[hidden],
+#hud[hidden],
+#banner[hidden],
+#panel[hidden],
+#net[hidden] { display: none; }
+
 #hud {
   position: fixed;
   top: 0;
