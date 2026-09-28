@@ -160,7 +160,7 @@ function drawDrops(drops) {
   ctx.fillStyle = "#10141c";
   ctx.fillRect(bowl.cx - bowl.r, bowl.cy - bowl.r, bowl.r * 2, bowl.r * 2);
   ctx.fillStyle = "#f4f7fb";
-  const radius = bowl.r * 0.2;
+  const radius = bowl.r * 0.12;
   let sx = 0;
   let sy = 0;
   const points = drops.map((drop) => {
@@ -582,6 +582,9 @@ window.addEventListener("pointerdown", (event) => {
 window.addEventListener("pointermove", (event) => {
   if (event.pointerId !== pointerId) return;
   pointer = pointerPoint(event);
+  if (world && world.status === "playing" && pointer) {
+    socket.emit("input", { pulling: true, x: pointer.x, y: pointer.y });
+  }
 });
 
 function endPointer(event) {
@@ -590,8 +593,8 @@ function endPointer(event) {
   pointer = null;
 }
 
-canvas.addEventListener("pointerup", endPointer);
-canvas.addEventListener("pointercancel", endPointer);
+window.addEventListener("pointerup", endPointer);
+window.addEventListener("pointercancel", endPointer);
 canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 
 window.addEventListener("resize", resize);

@@ -19,6 +19,16 @@ test("the closest hand keeps the silver", () => {
   assert.equal(drops.length, 1);
 });
 
+test("a hand on the white spot keeps it stuck", () => {
+  const drops = [{ x: 0.5, y: 0.5, vx: 0, vy: 0 }];
+  const players = [
+    { x: 0.62, y: 0.5, tx: 0.62, ty: 0.5, pulling: true, connected: true, inRound: true, score: 0 },
+  ];
+  for (let i = 0; i < 8; i += 1) mercury.step(drops, players, 0.05);
+  assert.ok(drops[0].x > 0.58);
+  assert.ok(players[0].score >= 8);
+});
+
 test("a held magnet draws the silver toward that hand", () => {
   const drops = [{ x: 0.5, y: 0.5, vx: 0, vy: 0 }];
   const players = [

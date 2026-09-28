@@ -6,7 +6,7 @@ const os = require("os");
 const MAX_PLAYERS = 6;
 const DROPS = 56;
 const BOWL = 0.24;
-const HOLD = 0.16;
+const HOLD = 0.22;
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const COLORS = ["#c4b5ff", "#ffb15a", "#7dffe1", "#ff7aa2", "#d6ff6b", "#8ecbff"];
 
@@ -141,22 +141,22 @@ function step(drops, players, dt) {
   cy /= drops.length || 1;
 
   for (const drop of drops) {
-    let ax = (cx - drop.x) * 1.1;
-    let ay = (cy - drop.y) * 1.1;
+    let ax = (cx - drop.x) * (active.length ? 0.35 : 1.1);
+    let ay = (cy - drop.y) * (active.length ? 0.35 : 1.1);
     for (const player of active) {
       const dx = player.x - drop.x;
       const dy = player.y - drop.y;
       const dist = Math.hypot(dx, dy) + 0.04;
-      const pull = 8 / dist;
+      const pull = 16 / dist;
       ax += (dx / dist) * pull;
       ay += (dy / dist) * pull;
     }
     drop.vx = (drop.vx + ax * dt) * 0.9;
     drop.vy = (drop.vy + ay * dt) * 0.9;
     const speed = Math.hypot(drop.vx, drop.vy);
-    if (speed > 1.15) {
-      drop.vx = (drop.vx / speed) * 1.15;
-      drop.vy = (drop.vy / speed) * 1.15;
+    if (speed > 2.4) {
+      drop.vx = (drop.vx / speed) * 2.4;
+      drop.vy = (drop.vy / speed) * 2.4;
     }
     drop.x += drop.vx * dt;
     drop.y += drop.vy * dt;
@@ -181,7 +181,17 @@ function step(drops, players, dt) {
         bestDist = dist;
       }
     }
-    if (best) best.score += 1;
+    if (!best) continue;
+    best.score += 1;
+    drop.x += (best.x - drop.x) * 0.62;
+    drop.y += (best.y - drop.y) * 0.62;
+    const ox = drop.x - 0.5;
+    const oy = drop.y - 0.5;
+    const radius = Math.hypot(ox, oy);
+    if (radius > BOWL) {
+      drop.x = 0.5 + (ox / radius) * BOWL;
+      drop.y = 0.5 + (oy / radius) * BOWL;
+    }
   }
 }
 
