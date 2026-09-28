@@ -194,9 +194,9 @@ function lobbyHtml() {
           return `<li><span class="dot" style="background:${safeColor(player.color)}"></span><span>${esc(player.name)}${marks ? ` · ${esc(marks)}` : ""}</span></li>`;
         }).join("")}
       </ul>
+      ${start}
       ${shortRules()}
       <p><button type="button" class="ghost" data-act="rules">Full rules</button></p>
-      ${start}
     </section>`;
 }
 
@@ -205,16 +205,27 @@ function matchClass(face) {
   return CallRules.dieMatches(face, state.reveal.bid.face, !state.palifico) ? "match" : "dim";
 }
 
+function shownHand(player) {
+  if (!state.reveal || !state.reveal.hands) return null;
+  if (state.status !== "reveal" && state.status !== "gameover") return null;
+  return state.reveal.hands.find((hand) => hand.id === player.id) || null;
+}
+
 function seatHtml(player) {
   const active = state.turnPlayerId === player.id && state.status === "playing";
   const exposed = state.status === "reveal" || state.status === "gameover";
+  const hand = shownHand(player);
   let dice = "";
-  if (exposed && player.dice && player.dice.length) {
+  if (hand && hand.dice.length) {
+    dice = hand.dice.map((face) => dieHtml(face, matchClass(face))).join("");
+  } else if (exposed && player.dice && player.dice.length) {
     dice = player.dice.map((face) => dieHtml(face, matchClass(face))).join("");
   } else if (player.alive) {
     dice = cupsHtml(player.diceCount);
   }
-  let tag = player.alive ? String(player.diceCount) : (player.waiting ? "next" : "out");
+  let tag = hand
+    ? String(hand.dice.length)
+    : player.alive ? String(player.diceCount) : (player.waiting ? "next" : "out");
   if (!player.connected && player.alive) tag = "away";
   return `
     <article class="seat ${active ? "active" : ""} ${player.alive ? "" : "dead"}">
@@ -313,14 +324,16 @@ function dockHtml() {
   return `
     <div class="dock">
       <div class="faces">${faces}</div>
-      <div class="qty">
-        <button type="button" data-act="qty" data-dir="-1" aria-label="Fewer">−</button>
-        <strong>${draft.qty}</strong>
-        <button type="button" data-act="qty" data-dir="1" aria-label="More">+</button>
+      <div class="bid-row">
+        <div class="qty">
+          <button type="button" data-act="qty" data-dir="-1" aria-label="Fewer">−</button>
+          <strong>${draft.qty}</strong>
+          <button type="button" data-act="qty" data-dir="1" aria-label="More">+</button>
+        </div>
+        <button type="button" class="primary" data-act="raise" ${verdict.ok ? "" : "disabled"}>${verdict.ok ? `Bid ${esc(CallRules.bidPhrase(draft.qty, draft.face))}` : "Bid"}</button>
+        <button type="button" class="ghost" data-act="call" ${state.bid ? "" : "disabled"}>${state.bid ? "Call it a lie" : "Bid first"}</button>
       </div>
-      <p class="hint">${esc(verdict.ok ? `Bid ${CallRules.bidPhrase(draft.qty, draft.face)}` : verdict.reason)}</p>
-      <button type="button" class="primary" data-act="raise" ${verdict.ok ? "" : "disabled"}>${verdict.ok ? `Bid ${esc(CallRules.bidPhrase(draft.qty, draft.face))}` : "Bid"}</button>
-      <button type="button" class="ghost" data-act="call" ${state.bid ? "" : "disabled"}>${state.bid ? "Call it a lie" : "Bid first"}</button>
+      ${verdict.ok ? "" : `<p class="hint">${esc(verdict.reason)}</p>`}
     </div>`;
 }
 
@@ -328,8 +341,10 @@ function youHtml() {
   const player = me();
   if (!player) return "";
   const active = state.turnPlayerId === player.id && state.status === "playing";
-  const dice = player.dice && player.dice.length
-    ? player.dice.map((face) => dieHtml(face, matchClass(face))).join("")
+  const hand = shownHand(player);
+  const faces = hand ? hand.dice : player.dice;
+  const dice = faces && faces.length
+    ? faces.map((face) => dieHtml(face, matchClass(face))).join("")
     : `<p class="wait">No dice</p>`;
   let note = "Only you can see these. Ones are wild.";
   if (state.palifico) note = "Palifico. Ones are not wild, and the face stays locked.";
@@ -424,7 +439,8 @@ function render() {
   }
   syncDraft();
   shown = "room";
-  app.innerHTML = `<main class="wrap">${topbar()}${state.status === "lobby" ? lobbyHtml() : tableHtml()}${rulesOverlay()}</main>`;
+  const docked = state.status !== "lobby";
+  app.innerHTML = `<main class="wrap${docked ? " has-dock" : ""}">${topbar()}${state.status === "lobby" ? lobbyHtml() : tableHtml()}${rulesOverlay()}</main>`;
   document.title = `CALL IT · ${state.code}`;
   paintClock();
 }

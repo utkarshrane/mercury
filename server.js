@@ -320,7 +320,10 @@ function attach(httpServer) {
     if (caller.id !== room.turnPlayerId) return "It is not your turn.";
     if (!room.bid) return "There is no bid to call.";
 
-    const hidden = room.players.filter((player) => player.alive).flatMap((player) => player.dice);
+    const hands = room.players
+      .filter((player) => player.alive)
+      .map((player) => ({ id: player.id, dice: player.dice.slice() }));
+    const hidden = hands.flatMap((hand) => hand.dice);
     const count = rules.countFace(hidden, room.bid.face, !room.palifico);
     const holds = count >= room.bid.qty;
     const loserId = holds ? caller.id : room.bid.playerId;
@@ -349,6 +352,7 @@ function attach(httpServer) {
       holds,
       loserId,
       eliminatedId,
+      hands,
     };
     room.status = "reveal";
     armTimer(room, revealMs(), () => {

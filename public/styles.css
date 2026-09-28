@@ -58,6 +58,8 @@ button:disabled { opacity: 0.42; cursor: not-allowed; }
   z-index: 1;
 }
 
+.wrap.has-dock { padding-bottom: 200px; }
+
 .eyebrow {
   margin: 0 0 8px;
   color: var(--brass);
@@ -136,7 +138,7 @@ label {
 input:focus { outline: none; border-color: var(--brass); }
 ::placeholder { color: rgba(243, 234, 215, 0.38); }
 
-.home-actions, .dock { display: flex; flex-direction: column; gap: 10px; }
+.home-actions, .dock { display: flex; flex-direction: column; gap: 8px; }
 
 .home-actions { margin-top: 8px; }
 
@@ -397,6 +399,32 @@ button.ghost, .topbar button, .pill {
 .die[data-face="6"] i:nth-child(7),
 .die[data-face="6"] i:nth-child(9) { opacity: 1; }
 
+.dock {
+  position: fixed;
+  z-index: 6;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(680px, 100%);
+  margin: 0;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  background: #1a100e;
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.bid-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.bid-row .qty { margin: 0; flex: 0 0 auto; gap: 8px; }
+.bid-row .qty strong { font-size: 1.7rem; }
+.bid-row .qty button { width: 44px; height: 44px; }
+.bid-row .primary,
+.bid-row .ghost { width: auto; flex: 1 1 120px; min-height: 48px; }
+
 .faces {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -406,8 +434,8 @@ button.ghost, .topbar button, .pill {
 .face-btn {
   display: grid;
   place-items: center;
-  min-height: 52px;
-  padding: 6px;
+  min-height: 44px;
+  padding: 4px;
   border-radius: 12px;
   border: 1px solid rgba(243, 234, 215, 0.18);
   background: rgba(0, 0, 0, 0.25);

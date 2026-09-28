@@ -111,6 +111,10 @@ test("two players share a table, hide their dice, and resolve a true bid", async
     assert.equal(shownN.players.find((player) => player.id === callerId).diceCount, 4);
     assert.equal(shownN.players.find((player) => player.id !== callerId).diceCount, 5);
     assert.ok(Array.isArray(shownA.players.find((player) => player.id !== shownA.you).dice));
+    assert.equal(shownA.reveal.hands.length, 2);
+    assert.ok(shownA.reveal.hands.every((hand) => hand.dice.length === 5));
+    const visible = shownA.reveal.hands.reduce((sum, hand) => sum + rules.countFace(hand.dice, 6, true), 0);
+    assert.equal(visible, shownA.reveal.count);
 
     const nextA = nextState(asha);
     const nextN = nextState(noah);
@@ -165,6 +169,9 @@ test("a bluff fails when the table does not have the bid", async () => {
     assert.equal(shown.reveal.count, 0);
     assert.equal(shown.reveal.loserId, openerId);
     assert.equal(shown.players.find((player) => player.id === openerId).diceCount, 4);
+    assert.ok(shown.reveal.hands.every((hand) => hand.dice.length === 5));
+    const visible = shown.reveal.hands.reduce((sum, hand) => sum + rules.countFace(hand.dice, 1, false), 0);
+    assert.equal(visible, shown.reveal.count);
   } finally {
     ada.close();
     bo.close();
