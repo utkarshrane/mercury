@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07141c">
+  <meta name="description" content="VITAL is a live multiplayer game. Each phone holds a different vital sign.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="VITAL">
+  <title>VITAL</title>
+  <link rel="icon" href="/vital.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,560;1,9..144,560&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/vital.css">
+</head>
+<body>
+  <canvas id="ward"></canvas>
+  <header id="hud" hidden></header>
+  <div id="panel"></div>
+  <p id="net" hidden>Reconnecting…</p>
+  <div id="toast" role="status"></div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/vital.js"></script>
+</body>
+</html>
