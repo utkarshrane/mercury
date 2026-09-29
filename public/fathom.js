@@ -134,7 +134,7 @@ function lobbyHtml() {
       ? `<button type="button" class="primary" data-act="start" ${here < 2 ? "disabled" : ""}>Dive</button>
          <p class="wait">${here < 2 ? "Need one more diver." : `${here} here. Press dive.`}</p>`
       : `<p class="wait">Waiting for the host to dive.</p>`}
-    <p class="hint">Drag to swim. Take a bell. Surface two.</p>
+    <p class="hint">Drag to swim. Every bell you touch comes with you. Surface two.</p>
     <button type="button" class="ghost" data-act="copy-link">Copy invite link</button>
     <button type="button" class="ghost" data-act="leave">Leave</button>`;
 }
@@ -220,16 +220,17 @@ function updateHud() {
   if (goal) {
     goal.textContent = !me || world.status !== "playing"
       ? ""
-      : me.bell != null
-        ? "Carry the bell to the moon pool"
+      : (me.holding || 0) > 1 || me.bell != null
+        ? ((me.holding || 1) > 1 ? "Carry the bells to the moon pool" : "Carry the bell to the moon pool")
         : me.banks
-          ? "One more bell"
-          : "Swim to a gold bell";
+          ? "Grab another bell"
+          : "Swim to a gold bell. You can carry more than one.";
   }
   air.style.width = `${me ? me.air : 0}%`;
   air.style.background = me && me.air < 30 ? "#ffb085" : "#7dffe1";
   chips.innerHTML = world.players.map((player) => {
-    const hold = player.bell != null ? " · bell" : "";
+    const count = player.holding || (player.bell != null ? 1 : 0);
+    const hold = count > 1 ? ` · ${count} bells` : count === 1 ? " · bell" : "";
     return `<b style="color:${esc(player.color)}">${esc(player.name)} ${player.banks}${hold}</b>`;
   }).join("");
 }

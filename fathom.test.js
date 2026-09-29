@@ -72,6 +72,22 @@ test("touching a carrier takes the bell", () => {
   assert.equal(bell.carriedBy, "b");
 });
 
+test("a diver can carry a second bell", () => {
+  const room = roomWith([diver("a", 0, 0)]);
+  const [first, second] = room.bells;
+  const player = room.players[0];
+  player.x = first.x;
+  player.y = first.y;
+  fathom.step(room, 0.05);
+  assert.equal(player.held.length, 1);
+  player.x = second.x;
+  player.y = second.y;
+  fathom.step(room, 0.05);
+  assert.deepEqual(player.held.slice().sort(), [first.id, second.id].sort());
+  assert.equal(first.carriedBy, "a");
+  assert.equal(second.carriedBy, "a");
+});
+
 test("surfacing a bell at the moon pool banks it", () => {
   const room = roomWith([diver("a", 0, 0)]);
   const bell = room.bells[0];

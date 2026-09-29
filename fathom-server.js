@@ -197,15 +197,28 @@ function flowOf(cell) {
   return null;
 }
 
+function heldIds(player) {
+  if (!Array.isArray(player.held)) player.held = player.bell == null ? [] : [player.bell];
+  player.bell = player.held.length ? player.held[0] : null;
+  return player.held;
+}
+
 function dropBell(room, player) {
-  if (player.bell == null) return;
-  const bell = room.bells.find((item) => item.id === player.bell);
-  if (bell && !bell.banked) {
+  const ids = heldIds(player).slice();
+  player.held = [];
+  player.bell = null;
+  for (const id of ids) {
+    const bell = room.bells.find((item) => item.id === id);
+    if (!bell || bell.banked) continue;
     bell.carriedBy = null;
     bell.x = player.x;
     bell.y = player.y;
   }
-  player.bell = null;
+}
+
+function atPool(room, player) {
+  if (tileAt(room.grid, player.x, player.y) === "H") return true;
+  return Math.hypot(player.x - room.hatch.x, player.y - room.hatch.y) < 1.7;
 }
 
 function drown(room, player) {
@@ -258,7 +271,8 @@ function step(room, dt) {
       ix /= mag;
       iy /= mag;
     }
-    const speed = player.bell == null ? SPEED : CARRY;
+    const carrying = heldIds(player).length;
+    const speed = carrying ? Math.max(3.1, CARRY - (carrying - 1) * 0.7) : SPEED;
     let dx = ix * speed * dt;
     let dy = iy * speed * dt;
     const flow = player.stun > 0 ? null : flowOf(tileAt(room.grid, player.x, player.y));
@@ -274,11 +288,11 @@ function step(room, dt) {
   }
 
   for (const player of live) {
-    if (player.stun > 0 || player.bell != null || player.stealLock > 0) continue;
+    if (player.stun > 0 || player.stealLock > 0) continue;
     let best = null;
     let bestDist = STEAL;
     for (const other of live) {
-      if (other === player || other.bell == null || other.stun > 0) continue;
+      if (other === player || !heldIds(other).length || other.stun > 0) continue;
       const dist = Math.hypot(other.x - player.x, other.y - player.y);
       if (dist < bestDist) {
         bestDist = dist;
@@ -286,9 +300,11 @@ function step(room, dt) {
       }
     }
     if (!best) continue;
-    const bell = room.bells.find((item) => item.id === best.bell);
-    player.bell = best.bell;
-    best.bell = null;
+    const id = best.held.shift();
+    heldIds(best);
+    const bell = room.bells.find((item) => item.id === id);
+    heldIds(player).push(id);
+    heldIds(player);
     if (bell) bell.carriedBy = player.id;
     player.stealLock = 1.5;
     best.stealLock = 1.5;
@@ -299,7 +315,8 @@ function step(room, dt) {
     let best = null;
     let bestDist = PICKUP;
     for (const player of live) {
-      if (player.stun > 0 || player.bell != null || player.stealLock > 0) continue;
+      if (player.stun > 0 || player.stealLock > 0) continue;
+      if (heldIds(player).includes(bell.id)) continue;
       const dist = Math.hypot(bell.x - player.x, bell.y - player.y);
       if (dist < bestDist) {
         bestDist = dist;
@@ -307,22 +324,26 @@ function step(room, dt) {
       }
     }
     if (!best) continue;
-    best.bell = bell.id;
+    heldIds(best).push(bell.id);
+    heldIds(best);
     bell.carriedBy = best.id;
   }
 
   let winner = null;
   for (const player of live) {
-    if (player.bell == null || player.stun > 0) continue;
-    if (tileAt(room.grid, player.x, player.y) !== "H") continue;
-    const bell = room.bells.find((item) => item.id === player.bell);
-    if (!bell || bell.banked) continue;
-    bell.banked = true;
-    bell.carriedBy = null;
-    bell.x = room.hatch.x + (bell.id - 1) * 0.55;
-    bell.y = room.hatch.y;
+    const carried = heldIds(player);
+    if (!carried.length || player.stun > 0 || !atPool(room, player)) continue;
+    for (const id of carried.slice()) {
+      const bell = room.bells.find((item) => item.id === id);
+      if (!bell || bell.banked) continue;
+      bell.banked = true;
+      bell.carriedBy = null;
+      bell.x = room.hatch.x + (bell.id - 1) * 0.55;
+      bell.y = room.hatch.y;
+      player.banks += 1;
+    }
+    player.held = [];
     player.bell = null;
-    player.banks += 1;
     if (player.banks >= BANKS) winner = player.id;
   }
 
@@ -330,7 +351,9 @@ function step(room, dt) {
     if (bell.banked || !bell.carriedBy) continue;
     const carrier = live.find((player) => player.id === bell.carriedBy);
     if (!carrier) continue;
-    bell.x = carrier.x;
+    const carried = heldIds(carrier);
+    const index = Math.max(0, carried.indexOf(bell.id));
+    bell.x = carrier.x + (index - (carried.length - 1) / 2) * 0.42;
     bell.y = carrier.y;
   }
   return winner;
@@ -406,6 +429,7 @@ function attachFathom(io, httpServer) {
       player.air = AIR_MAX;
       player.stun = 0;
       player.bell = null;
+      player.held = [];
       player.banks = 0;
       player.stealLock = 0;
       player.inRound = true;
@@ -448,6 +472,7 @@ function attachFathom(io, httpServer) {
         air: Math.round(player.air),
         banks: player.banks,
         bell: player.bell,
+        holding: heldIds(player).length,
         stun: player.stun > 0,
         inRound: player.inRound,
         connected: player.connected,
@@ -597,6 +622,7 @@ function attachFathom(io, httpServer) {
       air: AIR_MAX,
       stun: 0,
       bell: null,
+      held: [],
       banks: 0,
       stealLock: 0,
       inRound: false,
